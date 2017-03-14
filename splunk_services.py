@@ -5,28 +5,10 @@ import json
 import time
 import logging
 
-USERNAME = '<username>'
-PASSWORD = '<password>'
-WEB_PORT = 8089
-SERVER_LIST = ['lyn-del-spl-101',
-               'lyn-del-spl-102',
-               'lyn-del-spl-103',
-               'lyn-del-spl-104',
-               'lyn-del-spl-201',
-               'lyn-del-spl-202',
-               'lyn-del-spl-203',
-               'lyn-del-spl-204',
-               'lyn-del-spl-205',
-               'lyn-del-spl-206',
-               'lyn-del-spl-301',
-               'lyn-del-spl-302',
-               'lyn-del-spl-303',
-               'lyn-del-spl-304',
-               'lyn-del-spl-305',
-               'lyn-del-spl-306',
-               'lyn-del-spl-307',
-               'wfc-zit-spl-201',
-               'wfc-zit-spl-202']
+USERNAME = ''
+PASSWORD = ''
+WEB_PORT =
+SERVER_LIST = []
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -111,6 +93,3 @@ if __name__ == "__main__":
                 logger.info(msg)
                 del jobs[i]
         time.sleep(3)
-
-
-

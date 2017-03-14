@@ -25,8 +25,10 @@ __maintainer__ = "Bernardo Macias"
 __email__ = 'bmacias@httpstergeek.com'
 __status__ = 'Production'
 
-import urllib, urllib2
+import urllib
+import urllib2
 import json
+
 
 class SPLK():
     """
@@ -68,7 +70,7 @@ class SPLK():
         :param search_query: string
         :return:
         """
-        data = dict(search=search_query, output_mode=self.output_mode,max_count='10000')
+        data = dict(search=search_query, output_mode=self.output_mode, count='-1')
         search_url = '/servicesNS/{0}/search/search/jobs/'.format(self.username)
         request = urllib2.Request('{0}{1}'.format(self.url, search_url),
                                   data=urllib.urlencode(data),
@@ -94,7 +96,8 @@ class SPLK():
         return self.job_details
 
     def alljobsdetails(self):
-        request = urllib2.Request('{0}{1}'.format(self.url, '/servicesNS/splunk-system-user/search/search/jobs'),
+        request = urllib2.Request('{0}{1}'.format(self.url,
+                                                  '/servicesNS/splunk-system-user/search/search/jobs'),
                                   data=urllib.urlencode(dict(output_mode=self.output_mode)),
                                   headers=self.auth_header)
         connection = urllib2.urlopen(request)
@@ -104,7 +107,7 @@ class SPLK():
 
     def jobstatistics(self, job_details):
         job_statistics = dict()
-        job_statistics['disk_usage'] = int(job_details['entry'][0]['content']['diskUsage'])/1024
+        job_statistics['disk_usage'] = int(job_details['entry'][0]['content']['diskUsage']) / 1024
         job_statistics['run_duration'] = job_details['entry'][0]['content']['runDuration']
         job_statistics['performance'] = job_details['entry'][0]['content']['performance']
         job_statistics['resultCount'] = job_details['entry'][0]['content']['resultCount']
@@ -125,11 +128,13 @@ class SPLK():
         :return:
         """
         search_url = '/servicesNS/{0}/search/search/jobs/'.format(username)
-        request = urllib2.Request('{0}{1}{2}{3}'.format(self.url, search_url, job_id, '/results?output_mode={0}&count=0'.format(outputmode)),
+        request = urllib2.Request('{0}{1}{2}{3}'.format(self.url,
+                                                        search_url,
+                                                        job_id,
+                                                        '/results?output_mode={0}&count=0'.format(outputmode)),
                                   headers=self.auth_header)
         connection = urllib2.urlopen(request)
         results = connection.read()
-        print results
         connection.close()
         return results
 
@@ -140,46 +145,6 @@ class SPLK():
         """
         request = urllib2.Request('{0}{1}{2}'.format(self.url, '/services/authentication/httpauth-tokens/', self.session_key),
                                   headers=self.auth_header)
-        request.get_method = get_method = lambda: 'DELETE'
+        request.get_method = lambda: 'DELETE'
         connection = urllib2.urlopen(request)
         connection.close()
-
-if __name__ == '__main__':
-    import time
-    base_url = ''
-    username = ''
-    password = ''
-    search_query = 'search index=zon affected_env{}=val_300 operation="*" change_event_id="*" earliest=-5h sourcetype=zmq_access| stats count'
-    # output_mode can be either csv, raw or json
-    #output_mode = 'csv'
-    output_mode = 'json'
-    #output_mode = 'xml'
-
-    splunk = SPLK(url=base_url,
-                  username=username,
-                  password=password)
-    splunk.requestsession()
-    #print splunk.alljobsdetails()
-    splunk.createjob(search_query)
-
-    done = False
-
-    while not done:
-        splunk.jobdetails(splunk.job_id)
-        # Raise an exception if job is zombie or failed state
-        if splunk.jobstatus() == 'DONE':
-            done = True
-        if splunk.jobstatus() == 'FAILED':
-            raise Exception('current search job failed due to a fatal error')
-
-        if not done:
-            print 'not done'
-            time.sleep(2)
-
-    results = splunk.getresults(splunk.job_id, 'json')
-    results = json.loads(results)
-    print results
-    i = 0
-    for result in results['results']:
-        print result
-    splunk.endsession()
