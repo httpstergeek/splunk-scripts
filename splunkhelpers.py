@@ -79,6 +79,14 @@ class SPLK():
         self.job_id = json.loads(connection.read())['sid']
         connection.close()
 
+    def savedsearches(self):
+        request = urllib2.Request('{0}{1}'.format(self.url, '/services/saved/searches'),
+                                  data=urllib.urlencode(dict(output_mode=self.output_mode)),
+                                  headers=self.auth_header)
+        connection = urllib2.urlopen(request)
+        self.job_details = json.loads(connection.read())
+        return self.job_details
+
     def jobdetails(self, job_id):
         """
         requests job details based on job_id. Can be any of QUEUED, PARSING, RUNNING, PAUSED, FINALIZING, FAILED, DONE.
